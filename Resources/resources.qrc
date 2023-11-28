@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/logo">
+        <file alias="scalian">LogoScalian.png</file>
+        <file alias="campus42">Campus42Logo.png</file>
+    </qresource>
+</RCC>
