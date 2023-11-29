@@ -61,24 +61,74 @@ void ScalianSudoku::limpiarSudoku()
         tablero[i] = 0;
 }
 
-void ScalianSudoku::resolverSudoku()
+void ScalianSudoku::resolverSudoku(int index)
 {
-    qDebug() << "Resolver Sudoku";
+    for (int i = index; i < TAMAÑO_TABLERO; i++)
+    {
+        if (tablero[i] == 0)
+        {
+            for (unsigned char n = 1; n < 10; n++)
+            {
+                if (numLegal(i, n))
+                {
+                    tablero[i] = n;
+                    if (chequearCompleto() && !chequearSudoku())
+                        tablero[i] = 0;
+                    resolverSudoku(i + 1);
+                }
+            }
+        }
+    }
+}
+
+bool ScalianSudoku::numLegal(int coord, unsigned char n)
+{
+    int col = getCol(coord);
+    int fila = getFila(coord);
+    for (int i = 0; i < TAMAÑO_FILA; i++)
+    {
+        if (tablero[getIndex(fila, i)] == n || tablero[getIndex(i, col)] == n)
+            return false;
+    }
+    return regionLegal(fila, col, n);
+}
+
+bool ScalianSudoku::regionLegal(int filaId, int colId, unsigned char n)
+{
+    int inicioFila = filaId / 3 * 3;
+    int inicioCol = colId / 3 * 3;
+
+    for (uint y = 0; y < 3; y++)
+    {
+        for (uint x = 0; x < 3; x++)
+        {
+            if (tablero[getIndex(inicioFila + y, inicioCol + x)] == n)
+                return false;
+        }
+    }
+    return true;
+}
+
+
+bool ScalianSudoku::chequearCompleto()
+{
+    for (int i = 0; i < TAMAÑO_TABLERO; i++)
+    {
+        if (tablero[i] == 0)
+            return false;
+    }
+    return true;
 }
 
 bool ScalianSudoku::chequearSudoku()
 {
-    printMyBoard();
     for (uint i = 0; i < TAMAÑO_FILA; i++)
     {
-        if (!interLegal(i, i)) // chequear el tablero en diagonal
-        {
-            qDebug() << "Ilegal en Coords(" << i << ", " << i << ")";
+        if (!interResuelta(i, i)) // chequear el tablero en diagonal
             return false;
-        }
         if (!(i % 3)) // chequear las regiones solo cuando entremos en una nueva
         {
-            if (!regionLegal(i, i))
+            if (!regionResuelta(i, i))
                 return false;
         }
     }
@@ -86,7 +136,7 @@ bool ScalianSudoku::chequearSudoku()
 }
 
 /* Revisa que la fila y la columna sea válida */
-bool ScalianSudoku::interLegal(uint filaId, uint colId)
+bool ScalianSudoku::interResuelta(uint filaId, uint colId)
 {
     unsigned char sum_fila = 0;
     unsigned char sum_col = 0;
@@ -98,7 +148,7 @@ bool ScalianSudoku::interLegal(uint filaId, uint colId)
     }
     if (sum_fila != 45 || sum_col != 45)
         return false;
-    if (!filaLegal(filaId) || !colLegal(colId))
+    if (!filaResuelta(filaId) || !colResuelta(colId))
         return false;
     return true;
 }
@@ -106,6 +156,8 @@ bool ScalianSudoku::interLegal(uint filaId, uint colId)
 /* Revisa que no haya ningún elemento duplicado en el array */
 bool ScalianSudoku::duplicados(std::array<unsigned char, TAMAÑO_FILA> arr)
 {
+    if (std::find(arr.begin(), arr.end(), 0) != arr.end())
+        return true;
     auto it = std::unique(arr.begin(), arr.end());
     if (std::distance(arr.begin(), it) == arr.size())
         return false;
@@ -113,10 +165,10 @@ bool ScalianSudoku::duplicados(std::array<unsigned char, TAMAÑO_FILA> arr)
 }
 
 /* Revisa que el subtablero de 3x3 sea válido */
-bool ScalianSudoku::regionLegal(uint filaId, uint colId)
+bool ScalianSudoku::regionResuelta(uint filaId, uint colId)
 {
-    uint inicioFila = filaId % 3 * 3;
-    uint inicioCol = colId % 3 * 3;
+    uint inicioFila = filaId / 3 * 3;
+    uint inicioCol = colId / 3 * 3;
     unsigned char sum = 0;
 
     std::array<unsigned char, TAMAÑO_FILA> arr;
@@ -133,7 +185,7 @@ bool ScalianSudoku::regionLegal(uint filaId, uint colId)
     return true;
 }
 
-bool ScalianSudoku::filaLegal(uint filaId)
+bool ScalianSudoku::filaResuelta(uint filaId)
 {
     std::array<unsigned char, TAMAÑO_FILA> arr;
     for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
@@ -143,7 +195,7 @@ bool ScalianSudoku::filaLegal(uint filaId)
     return true;
 }
 
-bool ScalianSudoku::colLegal(uint colId)
+bool ScalianSudoku::colResuelta(uint colId)
 {
     std::array<unsigned char, TAMAÑO_FILA> arr;
     for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
@@ -267,9 +319,10 @@ void ScalianSudoku::onLimpiarSudoku()
 
 void ScalianSudoku::onResolverSudoku()
 {
-    resolverSudoku();
+    resolverSudoku(0);
     bool resultado = chequearSudoku();
 
+    printMyBoard();
     if(resultado)
     {
         escribirResultado("Correcto", QColor(Qt::GlobalColor::green));
@@ -348,6 +401,16 @@ std::optional<std::tuple<uint, uint>> ScalianSudoku::obtenerCoordenadas(QObject 
 int ScalianSudoku::getIndex(int filaId, int colId, int tamaño)
 {
     return (filaId * tamaño + colId);
+}
+
+int ScalianSudoku::getCol(int coord)
+{
+    return (coord % TAMAÑO_FILA);
+}
+
+int ScalianSudoku::getFila(int coord)
+{
+    return (coord / TAMAÑO_FILA);
 }
 
 void ScalianSudoku::printMyBoard()
