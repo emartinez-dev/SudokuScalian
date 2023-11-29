@@ -8,6 +8,9 @@
 #include <QLabel>
 #include <QColor>
 
+#define TAMAÑO_TABLERO 81
+#define TAMAÑO_FILA 9
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class ScalianSudoku; }
 QT_END_NAMESPACE
@@ -43,11 +46,13 @@ protected:
     void onBorrar();
 
 private:    
-
+    unsigned char tablero[TAMAÑO_TABLERO];
     bool eventFilter(QObject *object, QEvent *event) override;
     std::optional<std::tuple<uint, uint>> obtenerCoordenadas(QObject *object);
 
     Ui::ScalianSudoku *ui;
     bool sudokuVacio;
+    int	getIndex(int filaId, int colId);
+    void printMyBoard(); // TODO: remove later, DEBUG FUNCTION
 };
 #endif // SCALIANSUDOKU_H

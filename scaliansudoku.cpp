@@ -5,6 +5,7 @@
 
 ScalianSudoku::ScalianSudoku(QWidget *parent)
     : QMainWindow(parent)
+    , tablero {}
     , ui(new Ui::ScalianSudoku)
     , sudokuVacio{true}
 {
@@ -72,12 +73,16 @@ bool ScalianSudoku::chequearSudoku()
 
 void ScalianSudoku::setearCelda(uint filaId, uint colId, uint valor)
 {
-    qDebug() << "Setear Celda ("<< filaId << "," << colId << "): " << valor;
+    tablero[getIndex(filaId, colId)] = valor;
+    escribirCelda(valor, filaId, colId);
+    printMyBoard();
 }
 
 void ScalianSudoku::borrarCelda(uint filaId, uint colId)
 {
-    qDebug() << "Borrar Celda ("<< filaId << "," << colId << ")";
+    tablero[getIndex(filaId, colId)] = 0;
+    limpiarCelda(filaId, colId);
+    printMyBoard();
 }
 
 ScalianSudoku::~ScalianSudoku()
@@ -259,3 +264,18 @@ std::optional<std::tuple<uint, uint>> ScalianSudoku::obtenerCoordenadas(QObject 
     return std::nullopt;
 }
 
+int ScalianSudoku::getIndex(int filaId, int colId)
+{
+    return (filaId * TAMAÑO_FILA + colId);
+}
+
+void ScalianSudoku::printMyBoard()
+{
+    QDebug debug = qDebug().noquote().nospace();
+    for (int var = 0; var < TAMAÑO_TABLERO; var++) {
+        if (!(var % TAMAÑO_FILA))
+            debug << "| \n";
+        debug << "| " << tablero[var] << " ";
+    }
+    debug << "| \n";
+}
