@@ -57,7 +57,8 @@ ScalianSudoku::ScalianSudoku(QWidget *parent)
 
 void ScalianSudoku::limpiarSudoku()
 {
-    qDebug() << "Borrar Sudoku";
+    for (int i = 0; i < TAMAÑO_TABLERO; i++)
+        tablero[i] = 0;
 }
 
 void ScalianSudoku::resolverSudoku()
@@ -67,22 +68,101 @@ void ScalianSudoku::resolverSudoku()
 
 bool ScalianSudoku::chequearSudoku()
 {
-    qDebug() << "Chequear Sudoku";
-    return false;
+    printMyBoard();
+    for (uint i = 0; i < TAMAÑO_FILA; i++)
+    {
+        if (!interLegal(i, i)) // chequear el tablero en diagonal
+        {
+            qDebug() << "Ilegal en Coords(" << i << ", " << i << ")";
+            return false;
+        }
+        if (!(i % 3)) // chequear las regiones solo cuando entremos en una nueva
+        {
+            if (!regionLegal(i, i))
+                return false;
+        }
+    }
+    return true;
+}
+
+/* Revisa que la fila y la columna sea válida */
+bool ScalianSudoku::interLegal(uint filaId, uint colId)
+{
+    unsigned char sum_fila = 0;
+    unsigned char sum_col = 0;
+
+    for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
+    {
+        sum_fila += tablero[getIndex(filaId, i)];
+        sum_col += tablero[getIndex(i, colId)];
+    }
+    if (sum_fila != 45 || sum_col != 45)
+        return false;
+    if (!filaLegal(filaId) || !colLegal(colId))
+        return false;
+    return true;
+}
+
+/* Revisa que no haya ningún elemento duplicado en el array */
+bool ScalianSudoku::duplicados(std::array<unsigned char, TAMAÑO_FILA> arr)
+{
+    auto it = std::unique(arr.begin(), arr.end());
+    if (std::distance(arr.begin(), it) == arr.size())
+        return false;
+    return true;
+}
+
+/* Revisa que el subtablero de 3x3 sea válido */
+bool ScalianSudoku::regionLegal(uint filaId, uint colId)
+{
+    uint inicioFila = filaId % 3 * 3;
+    uint inicioCol = colId % 3 * 3;
+    unsigned char sum = 0;
+
+    std::array<unsigned char, TAMAÑO_FILA> arr;
+    for (uint y = 0; y < 3; y++)
+    {
+        for (uint x = 0; x < 3; x++)
+        {
+            arr[getIndex(y, x, 3)] = tablero[getIndex(inicioFila + y, inicioCol + x)];
+            sum += tablero[getIndex(inicioFila + y, inicioCol + x)];
+        }
+    }
+	if (sum != 45 || duplicados(arr))
+        return false;
+    return true;
+}
+
+bool ScalianSudoku::filaLegal(uint filaId)
+{
+    std::array<unsigned char, TAMAÑO_FILA> arr;
+    for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
+        arr[i] = tablero[getIndex(filaId, i)];
+    if (duplicados(arr))
+        return false;
+    return true;
+}
+
+bool ScalianSudoku::colLegal(uint colId)
+{
+    std::array<unsigned char, TAMAÑO_FILA> arr;
+    for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
+        arr[i] = tablero[getIndex(i, colId)];
+    if (duplicados(arr))
+        return false;
+    return true;
 }
 
 void ScalianSudoku::setearCelda(uint filaId, uint colId, uint valor)
 {
     tablero[getIndex(filaId, colId)] = valor;
     escribirCelda(valor, filaId, colId);
-    printMyBoard();
 }
 
 void ScalianSudoku::borrarCelda(uint filaId, uint colId)
 {
     tablero[getIndex(filaId, colId)] = 0;
     limpiarCelda(filaId, colId);
-    printMyBoard();
 }
 
 ScalianSudoku::~ScalianSudoku()
@@ -182,6 +262,7 @@ void ScalianSudoku::onLimpiarSudoku()
 
     escribirResultado("");
     limpiarSudoku();
+    //fillMyBoard();
 }
 
 void ScalianSudoku::onResolverSudoku()
@@ -264,9 +345,9 @@ std::optional<std::tuple<uint, uint>> ScalianSudoku::obtenerCoordenadas(QObject 
     return std::nullopt;
 }
 
-int ScalianSudoku::getIndex(int filaId, int colId)
+int ScalianSudoku::getIndex(int filaId, int colId, int tamaño)
 {
-    return (filaId * TAMAÑO_FILA + colId);
+    return (filaId * tamaño + colId);
 }
 
 void ScalianSudoku::printMyBoard()
@@ -278,4 +359,16 @@ void ScalianSudoku::printMyBoard()
         debug << "| " << tablero[var] << " ";
     }
     debug << "| \n";
+}
+
+/* Fills the board with a failing test */
+void ScalianSudoku::fillMyBoard()
+{
+    for (int i = 0; i < TAMAÑO_FILA; i++) {
+        for (int j = 0; j < TAMAÑO_FILA; j++) {
+            int valor = (i + j) % TAMAÑO_FILA + 1;
+            tablero[i * TAMAÑO_FILA + j] = valor;
+            escribirCelda(valor, i, j);
+        }
+    }
 }

@@ -7,6 +7,7 @@
 #include <tuple>
 #include <QLabel>
 #include <QColor>
+#include <algorithm>
 
 #define TAMAÑO_TABLERO 81
 #define TAMAÑO_FILA 9
@@ -49,10 +50,16 @@ private:
     unsigned char tablero[TAMAÑO_TABLERO];
     bool eventFilter(QObject *object, QEvent *event) override;
     std::optional<std::tuple<uint, uint>> obtenerCoordenadas(QObject *object);
+    bool interLegal(uint filaId, uint colId);
+    bool regionLegal(uint filaId, uint colId);
+    bool colLegal(uint colId);
+    bool filaLegal(uint filaId);
+    bool duplicados(std::array<unsigned char, TAMAÑO_FILA> arr);
 
     Ui::ScalianSudoku *ui;
     bool sudokuVacio;
-    int	getIndex(int filaId, int colId);
+    int getIndex(int filaId, int colId, int tamaño = TAMAÑO_FILA);
     void printMyBoard(); // TODO: remove later, DEBUG FUNCTION
+    void fillMyBoard(); // TODO: remove later, DEBUG FUNCTION
 };
 #endif // SCALIANSUDOKU_H
