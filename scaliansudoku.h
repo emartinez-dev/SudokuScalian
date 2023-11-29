@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QColor>
 #include <algorithm>
+#include <vector>
 
 #define TAMAÑO_TABLERO 81
 #define TAMAÑO_FILA 9
@@ -24,7 +25,7 @@ public:
     ScalianSudoku(QWidget *parent = nullptr);
 
     virtual void limpiarSudoku();
-    virtual void resolverSudoku(int index);
+    virtual void resolverSudoku();
     virtual bool chequearSudoku();
     virtual void setearCelda(uint filaId, uint colId, uint valor);
     virtual void borrarCelda(uint filaId, uint colId);
@@ -50,14 +51,25 @@ private:
     unsigned char tablero[TAMAÑO_TABLERO];
     bool eventFilter(QObject *object, QEvent *event) override;
     std::optional<std::tuple<uint, uint>> obtenerCoordenadas(QObject *object);
-    bool interResuelta(uint filaId, uint colId);
-    bool regionResuelta(uint filaId, uint colId);
-    bool colResuelta(uint colId);
-    bool filaResuelta(uint filaId);
-    bool duplicados(std::array<unsigned char, TAMAÑO_FILA> arr);
-    bool numLegal(int coord, unsigned char n);
-    bool regionLegal(int filaId, int colId, unsigned char n);
+    bool interResuelta(uint filaId, uint colId, bool permitirVacios=false);
+    bool regionResuelta(uint filaId, uint colId, bool permitirVacios=false);
+    bool colResuelta(uint colId, bool permitirVacios);
+    bool filaResuelta(uint filaId, bool permitirVacios);
+
+    bool chequearDuplicados(std::array<unsigned char, TAMAÑO_FILA> arr, bool permitirVacios=false);
+
+    bool interInsertLegal(int coord, unsigned char n);
+    bool regionInsertLegal(int filaId, int colId, unsigned char n);
+
+    bool chequearFilaLegal(int filaId);
+    bool chequearColLegal(int colId);
+    bool chequearRegionLegal(int coord);
+
     bool chequearCompleto();
+    bool resolverBT(int index = 0);
+
+    bool chequearLegal();
+    int contarCeros(std::array<unsigned char, TAMAÑO_FILA> arr);
 
     Ui::ScalianSudoku *ui;
     bool sudokuVacio;
