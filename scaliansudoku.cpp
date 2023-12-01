@@ -66,6 +66,8 @@ void ScalianSudoku::limpiarSudoku()
 void ScalianSudoku::resolverSudoku()
 {
     resolverBT();
+    for (uint_fast8_t i = 0; i < TAMAÑO_TABLERO; i++)
+        escribirCelda(tablero[i], getFila(i), getCol(i), Qt::GlobalColor::blue);
 }
 
 bool ScalianSudoku::resolverBT(int index)
@@ -79,7 +81,6 @@ bool ScalianSudoku::resolverBT(int index)
         if (interInsertLegal(index, n))
         {
             tablero[index] = n;
-            escribirCelda(n, getFila(index), getCol(index), Qt::GlobalColor::blue);
             if (resolverBT(index + 1))
                 return true;
         }
@@ -345,7 +346,6 @@ void ScalianSudoku::onLimpiarSudoku()
 
     escribirResultado("");
     limpiarSudoku();
-    //fillMyBoard();
 }
 
 void ScalianSudoku::onResolverSudoku()
