@@ -7,7 +7,6 @@
 #include <tuple>
 #include <QLabel>
 #include <QColor>
-#include <unordered_set>
 
 #define TAMAÑO_TABLERO 81
 #define TAMAÑO_FILA 9
@@ -75,7 +74,5 @@ private:
     int getIndex(int filaId, int colId, int tamaño = TAMAÑO_FILA);
     int getCol(int coord);
     int getFila(int coord);
-    void printMyBoard(); // TODO: remove later, DEBUG FUNCTION
-    void fillMyBoard(); // TODO: remove later, DEBUG FUNCTION
 };
 #endif // SCALIANSUDOKU_H

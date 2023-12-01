@@ -2,6 +2,8 @@
 #include "ui_scaliansudoku.h"
 #include <QPixmap>
 #include <QDebug>
+#include <unordered_set>
+#include <stdint.h>
 
 ScalianSudoku::ScalianSudoku(QWidget *parent)
     : QMainWindow(parent)
@@ -72,7 +74,7 @@ bool ScalianSudoku::resolverBT(int index)
         return true;
     if (tablero[index] != 0)
         return resolverBT(index + 1);
-    for (unsigned char n = 1; n <= TAMAÑO_FILA; n++)
+    for (uint_fast8_t n = 1; n <= TAMAÑO_FILA; n++)
     {
         if (interInsertLegal(index, n))
         {
@@ -126,12 +128,12 @@ bool ScalianSudoku::chequearLleno()
 
 bool ScalianSudoku::chequearLegal()
 {
-    for (unsigned char y = 0; y < TAMAÑO_FILA; y++)
+    for (uint_fast8_t y = 0; y < TAMAÑO_FILA; y++)
     {
         std::unordered_set<unsigned char> col;
         std::unordered_set<unsigned char> fila;
         std::unordered_set<unsigned char> region;
-        for (unsigned char x = 0; x < TAMAÑO_FILA; x++)
+        for (uint_fast8_t x = 0; x < TAMAÑO_FILA; x++)
         {
             if (fila.find(tablero[getIndex(y, x)]) != fila.end())
                 return false;
@@ -174,7 +176,7 @@ bool ScalianSudoku::interResuelta(uint filaId, uint colId)
     unsigned char sum_fila = 0;
     unsigned char sum_col = 0;
 
-    for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
+    for (uint_fast8_t i = 0; i < TAMAÑO_FILA; i++)
     {
         sum_fila += tablero[getIndex(filaId, i)];
         sum_col += tablero[getIndex(i, colId)];
@@ -194,9 +196,9 @@ bool ScalianSudoku::regionResuelta(uint filaId, uint colId)
     unsigned char sum = 0;
 
     std::array<unsigned char, TAMAÑO_FILA> arr;
-    for (uint y = 0; y < 3; y++)
+    for (uint_fast8_t y = 0; y < 3; y++)
     {
-        for (uint x = 0; x < 3; x++)
+        for (uint_fast8_t x = 0; x < 3; x++)
         {
             arr[getIndex(y, x, 3)] = tablero[getIndex(inicioFila + y, inicioCol + x)];
             sum += tablero[getIndex(inicioFila + y, inicioCol + x)];
@@ -210,7 +212,7 @@ bool ScalianSudoku::regionResuelta(uint filaId, uint colId)
 bool ScalianSudoku::filaResuelta(uint filaId)
 {
     std::array<unsigned char, TAMAÑO_FILA> arr;
-    for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
+    for (uint_fast8_t i = 0; i < TAMAÑO_FILA; i++)
         arr[i] = tablero[getIndex(filaId, i)];
     if (chequearDuplicados(arr))
         return false;
@@ -220,7 +222,7 @@ bool ScalianSudoku::filaResuelta(uint filaId)
 bool ScalianSudoku::colResuelta(uint colId)
 {
     std::array<unsigned char, TAMAÑO_FILA> arr;
-    for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
+    for (uint_fast8_t i = 0; i < TAMAÑO_FILA; i++)
         arr[i] = tablero[getIndex(i, colId)];
     if (chequearDuplicados(arr))
         return false;
@@ -443,27 +445,4 @@ int ScalianSudoku::getCol(int coord)
 int ScalianSudoku::getFila(int coord)
 {
     return (coord / TAMAÑO_FILA);
-}
-
-void ScalianSudoku::printMyBoard()
-{
-    QDebug debug = qDebug().noquote().nospace();
-    for (int var = 0; var < TAMAÑO_TABLERO; var++) {
-        if (!(var % TAMAÑO_FILA))
-            debug << "| \n";
-        debug << "| " << tablero[var] << " ";
-    }
-    debug << "| \n";
-}
-
-/* Fills the board with a failing test */
-void ScalianSudoku::fillMyBoard()
-{
-    for (int i = 0; i < TAMAÑO_FILA; i++) {
-        for (int j = 0; j < TAMAÑO_FILA; j++) {
-            int valor = (i + j) % TAMAÑO_FILA + 1;
-            tablero[i * TAMAÑO_FILA + j] = valor;
-            escribirCelda(valor, i, j);
-        }
-    }
 }
