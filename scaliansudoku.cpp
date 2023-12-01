@@ -63,15 +63,6 @@ void ScalianSudoku::limpiarSudoku()
 
 void ScalianSudoku::resolverSudoku()
 {
-    /* Revisar si el tablero inicial es legal, si no el programa crashea */
-    /*
-    if (chequearLegal())
-    {
-        resolverBT();
-    }
-    else
-        qDebug() << "El sudoku no es legal";
-    */
     resolverBT();
 }
 
@@ -123,6 +114,45 @@ bool ScalianSudoku::regionInsertLegal(int filaId, int colId, unsigned char n)
     return true;
 }
 
+bool ScalianSudoku::chequearLleno()
+{
+    for (uint i = 0; i < TAMAÑO_TABLERO; i++)
+    {
+        if (tablero[i] == 0)
+            return false;
+    }
+    return true;
+}
+
+bool ScalianSudoku::chequearLegal()
+{
+    for (unsigned char y = 0; y < TAMAÑO_FILA; y++)
+    {
+        std::unordered_set<unsigned char> col;
+        std::unordered_set<unsigned char> fila;
+        std::unordered_set<unsigned char> region;
+        for (unsigned char x = 0; x < TAMAÑO_FILA; x++)
+        {
+            if (fila.find(tablero[getIndex(y, x)]) != fila.end())
+                return false;
+            if (tablero[getIndex(y, x)] != 0)
+                fila.insert(tablero[getIndex(y, x)]);
+            if (col.find(tablero[getIndex(x, y)]) != col.end())
+                return false;
+            if (tablero[getIndex(x, y)] != 0)
+                col.insert(tablero[getIndex(x, y)]);
+
+            unsigned char ry = 3 * (y / 3) + x / 3;
+            unsigned char rx = 3 * (y % 3) + x % 3;
+            if (region.find(tablero[getIndex(ry, rx)]) != region.end())
+                return false;
+            if (tablero[getIndex(ry, rx) != 0])
+                region.insert(tablero[getIndex(ry, rx)]);
+        }
+    }
+    return true;
+}
+
 bool ScalianSudoku::chequearSudoku()
 {
     for (uint i = 0; i < TAMAÑO_FILA; i++)
@@ -138,24 +168,8 @@ bool ScalianSudoku::chequearSudoku()
     return true;
 }
 
-// TODO: revisar bien esta función
-bool ScalianSudoku::chequearLegal()
-{
-    for (uint i = 0; i < TAMAÑO_FILA; i++)
-    {
-        if (!interResuelta(i, i, true)) // chequear el tablero en diagonal
-            return false;
-        if (!(i % 3)) // chequear las regiones solo cuando entremos en una nueva
-        {
-            if (!regionResuelta(i, i, true))
-                return false;
-        }
-    }
-    return true;
-}
-
 /* Revisa que la fila y la columna sea válida */
-bool ScalianSudoku::interResuelta(uint filaId, uint colId, bool permitirVacios)
+bool ScalianSudoku::interResuelta(uint filaId, uint colId)
 {
     unsigned char sum_fila = 0;
     unsigned char sum_col = 0;
@@ -165,7 +179,7 @@ bool ScalianSudoku::interResuelta(uint filaId, uint colId, bool permitirVacios)
         sum_fila += tablero[getIndex(filaId, i)];
         sum_col += tablero[getIndex(i, colId)];
     }
-    if (!filaResuelta(filaId, permitirVacios) || !colResuelta(colId, permitirVacios))
+    if (!filaResuelta(filaId) || !colResuelta(colId))
         return false;
     if (sum_fila != 45 || sum_col != 45)
         return false;
@@ -173,7 +187,7 @@ bool ScalianSudoku::interResuelta(uint filaId, uint colId, bool permitirVacios)
 }
 
 /* Revisa que el subtablero de 3x3 sea válido */
-bool ScalianSudoku::regionResuelta(uint filaId, uint colId, bool permitirVacios)
+bool ScalianSudoku::regionResuelta(uint filaId, uint colId)
 {
     uint inicioFila = filaId / 3 * 3;
     uint inicioCol = colId % 3 * 3;
@@ -188,59 +202,36 @@ bool ScalianSudoku::regionResuelta(uint filaId, uint colId, bool permitirVacios)
             sum += tablero[getIndex(inicioFila + y, inicioCol + x)];
         }
     }
-    if (permitirVacios)
-        return (chequearDuplicados(arr, true));
     if (sum != 45 || chequearDuplicados(arr))
         return false;
     return true;
 }
 
-bool ScalianSudoku::filaResuelta(uint filaId, bool permitirVacios)
+bool ScalianSudoku::filaResuelta(uint filaId)
 {
     std::array<unsigned char, TAMAÑO_FILA> arr;
     for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
         arr[i] = tablero[getIndex(filaId, i)];
-    if (chequearDuplicados(arr, permitirVacios))
+    if (chequearDuplicados(arr))
         return false;
     return true;
 }
 
-bool ScalianSudoku::colResuelta(uint colId, bool permitirVacios)
+bool ScalianSudoku::colResuelta(uint colId)
 {
     std::array<unsigned char, TAMAÑO_FILA> arr;
     for (unsigned char i = 0; i < TAMAÑO_FILA; i++)
         arr[i] = tablero[getIndex(i, colId)];
-    if (chequearDuplicados(arr, permitirVacios))
+    if (chequearDuplicados(arr))
         return false;
     return true;
 }
 
-int ScalianSudoku::contarCeros(std::array<unsigned char, TAMAÑO_FILA> arr)
-{
-    int ceros = 0;
-    for (int i = 0; i < TAMAÑO_FILA; i++)
-    {
-        if (arr[i] == 0)
-            ceros++;
-    }
-    return (ceros);
-}
 
-/* Revisa que no haya ningún elemento duplicado en el array */
-// TODO: tengo que hacer que los ceros no se tengan en cuenta para los duplicados, creo que hay que modificar la función entera
-bool ScalianSudoku::chequearDuplicados(std::array<unsigned char, TAMAÑO_FILA> arr, bool permitirVacios)
+bool ScalianSudoku::chequearDuplicados(std::array<unsigned char, TAMAÑO_FILA> arr)
 {
     auto it = std::unique(arr.begin(), arr.end());
-    if (std::distance(arr.begin(), it) == arr.size())
-        return false;
-    if (permitirVacios && contarCeros(arr) > 1)
-    {
-        auto distancia = std::distance(arr.begin(), it);
-        auto tamaño = arr.size() + contarCeros(arr) - 1;
-        qDebug() << "Distancia: " << distancia << ", tamaño: " << tamaño;
-        return (distancia != tamaño);
-    }
-    return true;
+    return (std::distance(arr.begin(), it) != arr.size());
 }
 
 void ScalianSudoku::setearCelda(uint filaId, uint colId, uint valor)
@@ -357,18 +348,21 @@ void ScalianSudoku::onLimpiarSudoku()
 
 void ScalianSudoku::onResolverSudoku()
 {
-    resolverSudoku();
+    bool legal = chequearLegal();
+    if (legal)
+        resolverSudoku();
     bool resultado = chequearSudoku();
 
-    printMyBoard();
-    if(resultado)
+    if (resultado)
     {
         escribirResultado("Correcto", QColor(Qt::GlobalColor::green));
     }
-    else
+    else if (!legal && !chequearLleno())
     {
-        escribirResultado("Incorrecto", QColor(Qt::GlobalColor::red));
+        escribirResultado("Imposible", QColor(Qt::GlobalColor::red));
     }
+    else
+        escribirResultado("Incorrecto", QColor(Qt::GlobalColor::yellow));
 }
 
 void ScalianSudoku::onAceptar()
