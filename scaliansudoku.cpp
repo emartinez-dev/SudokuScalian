@@ -2,6 +2,7 @@
 #include "ui_scaliansudoku.h"
 #include <QPixmap>
 #include <QDebug>
+#include <cstdlib>
 #include <unordered_set>
 #include <stdint.h>
 
@@ -346,6 +347,7 @@ void ScalianSudoku::onLimpiarSudoku()
 
     escribirResultado("");
     limpiarSudoku();
+	rellenarAleatorio();
 }
 
 void ScalianSudoku::onResolverSudoku()
@@ -445,4 +447,31 @@ int ScalianSudoku::getCol(int coord)
 int ScalianSudoku::getFila(int coord)
 {
     return (coord / TAMAÑO_FILA);
+}
+
+int ScalianSudoku::generateRandom(time_t semilla)
+{
+	return (srand(uint(semilla)) % 8) + 1;
+}
+
+void ScalianSudoku::rellenarAleatorio()
+{
+	time_t semilla = time(NULL);
+	uint filaId, colId, valor;
+
+	limpiarSudoku();
+	for (uint i = 0; i < 16; i++)
+	{
+		filaId = generateRandom(semilla);
+		colId = generateRandom(semilla);
+		valor = generateRandom(semilla);
+		index = getIndex(filaId, colId);
+		if (tablero[index] == 0 && insertInsertLegal(index, valor))
+		{
+			tablero[index] = valor;
+			escribirCelda(valor, filaId, colId);
+		}
+		else
+			i--;
+	}
 }
