@@ -50,6 +50,7 @@ ScalianSudoku::ScalianSudoku(QWidget *parent)
         }
     }
 
+    connect(ui->botonAleatorio, &QPushButton::clicked, this, &ScalianSudoku::onGenerarSudoku);
     connect(ui->botonLimpiar, &QPushButton::clicked, this, &ScalianSudoku::onLimpiarSudoku);
     connect(ui->botonResolver, &QPushButton::clicked, this, &ScalianSudoku::onResolverSudoku);
 
@@ -66,9 +67,21 @@ void ScalianSudoku::limpiarSudoku()
 
 void ScalianSudoku::resolverSudoku()
 {
+    std::vector<uint_fast8_t> empty;
+    for (uint_fast8_t i = 0; i < TAMAÑO_TABLERO; i++)
+    {
+        if (tablero[i] != 0)
+        {
+            escribirCelda(tablero[i], getFila(i), getCol(i), Qt::GlobalColor::black);
+            empty.push_back(i);
+        }
+    }
     resolverBT();
     for (uint_fast8_t i = 0; i < TAMAÑO_TABLERO; i++)
-        escribirCelda(tablero[i], getFila(i), getCol(i), Qt::GlobalColor::blue);
+    {
+        if (std::find(empty.begin(), empty.end(), i) == empty.end())
+            escribirCelda(tablero[i], getFila(i), getCol(i), Qt::GlobalColor::blue);
+    }
 }
 
 bool ScalianSudoku::resolverBT(int index)
@@ -347,7 +360,6 @@ void ScalianSudoku::onLimpiarSudoku()
 
     escribirResultado("");
     limpiarSudoku();
-	rellenarAleatorio();
 }
 
 void ScalianSudoku::onResolverSudoku()
@@ -367,6 +379,12 @@ void ScalianSudoku::onResolverSudoku()
     }
     else
         escribirResultado("Incorrecto", QColor(Qt::GlobalColor::yellow));
+}
+
+void ScalianSudoku::onGenerarSudoku()
+{
+    onLimpiarSudoku();
+    rellenarAleatorio();
 }
 
 void ScalianSudoku::onAceptar()
@@ -449,27 +467,28 @@ int ScalianSudoku::getFila(int coord)
     return (coord / TAMAÑO_FILA);
 }
 
-int ScalianSudoku::generateRandom(time_t semilla)
+int ScalianSudoku::generateRandom()
 {
-	return (srand(uint(semilla)) % 8) + 1;
+    return (arc4random() % 8) + 1;
 }
 
 void ScalianSudoku::rellenarAleatorio()
 {
 	time_t semilla = time(NULL);
-	uint filaId, colId, valor;
+    srand((uint) semilla);
+    uint filaId, colId, valor, index;
 
 	limpiarSudoku();
-	for (uint i = 0; i < 16; i++)
+    for (uint i = 0; i < 16; i++)
 	{
-		filaId = generateRandom(semilla);
-		colId = generateRandom(semilla);
-		valor = generateRandom(semilla);
+        filaId = generateRandom();
+        colId = generateRandom();
+        valor = generateRandom();
 		index = getIndex(filaId, colId);
-		if (tablero[index] == 0 && insertInsertLegal(index, valor))
+        if (tablero[index] == 0 && interInsertLegal(index, valor))
 		{
 			tablero[index] = valor;
-			escribirCelda(valor, filaId, colId);
+            escribirCelda(valor, filaId, colId);
 		}
 		else
 			i--;

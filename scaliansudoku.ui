@@ -2544,7 +2544,7 @@ color: rgb(73, 36, 131);</string>
            <property name="lineWidth">
             <number>2</number>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0,0,0,0">
+           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0,0,0,0,0">
             <item>
              <spacer name="verticalSpacer_4">
               <property name="orientation">
@@ -2569,6 +2569,26 @@ color: rgb(73, 36, 131);</string>
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="botonLimpiar">
+              <property name="styleSheet">
+               <string notr="true">color: rgb(0, 0, 0);</string>
+              </property>
+              <property name="text">
+               <string>Borrar Sudoku</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="botonAleatorio">
+              <property name="styleSheet">
+               <string notr="true">color: rgb(0, 0, 0);</string>
+              </property>
+              <property name="text">
+               <string>Generar Sudoku</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer_5">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -2580,16 +2600,6 @@ color: rgb(73, 36, 131);</string>
                </size>
               </property>
              </spacer>
-            </item>
-            <item>
-             <widget class="QPushButton" name="botonLimpiar">
-              <property name="styleSheet">
-               <string notr="true">color: rgb(0, 0, 0);</string>
-              </property>
-              <property name="text">
-               <string>Borrar Sudoku</string>
-              </property>
-             </widget>
             </item>
             <item>
              <spacer name="verticalSpacer">

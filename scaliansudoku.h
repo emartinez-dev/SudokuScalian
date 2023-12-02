@@ -41,6 +41,7 @@ protected:
 
     void onLimpiarSudoku();
     void onResolverSudoku();
+    void onGenerarSudoku();
     void onAceptar();
     void onCancelar();
     void onBorrar();
@@ -74,5 +75,8 @@ private:
     int getIndex(int filaId, int colId, int tamaño = TAMAÑO_FILA);
     int getCol(int coord);
     int getFila(int coord);
+
+    void rellenarAleatorio();
+    int generateRandom();
 };
 #endif // SCALIANSUDOKU_H
